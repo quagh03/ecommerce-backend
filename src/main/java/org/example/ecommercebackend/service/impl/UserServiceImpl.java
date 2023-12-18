@@ -48,8 +48,8 @@ public class UserServiceImpl implements UserService {
         validateUserDto(userToAdd);
 
         // Check if mobile or email already exists
-        if (userRepository.existsByMobileOrEmail(userToAdd.getMobile(), userToAdd.getEmail())) {
-            throw new EntityExistsException("Mobile or email already exists");
+        if (userRepository.existsByMobileOrEmailOrUsername(userToAdd.getMobile(), userToAdd.getEmail(), userToAdd.getUsername())) {
+            throw new EntityExistsException("Mobile or email or username already exists");
         }
 
         User newUser = new User();
@@ -71,6 +71,10 @@ public class UserServiceImpl implements UserService {
 
         if (StringUtils.isEmpty(userDto.getLastName())) {
             throw new IllegalArgumentException("Last name must not be null or empty");
+        }
+
+        if (StringUtils.isEmpty(userDto.getUsername())) {
+            throw new IllegalArgumentException("Username must not be null or empty");
         }
 
         if (StringUtils.isEmpty(userDto.getMobile())) {

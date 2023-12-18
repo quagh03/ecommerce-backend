@@ -21,6 +21,9 @@ public class User {
     @Column(name = "last_name")
     private String lastName;
 
+    @Column(name = "user_name", unique = true)
+    private String username;
+
     @Column(name = "mobile", unique = true)
     private String mobile;
 
@@ -43,6 +46,14 @@ public class User {
     @Column(name = "profile")
     @Lob
     private String profile;
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     public UUID getId() {
         return id;
