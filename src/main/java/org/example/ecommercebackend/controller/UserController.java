@@ -16,7 +16,6 @@ import java.net.URI;
 
 
 @RestController
-@RequestMapping("/api")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -69,17 +68,17 @@ public class UserController {
     }
 
     //ADD USER
-    @PostMapping("/v1/users")
-    public ResponseEntity<JsonApiResponse<User>> createUser(@RequestBody UserDto userDto){
-        JsonApiResponse<User> response = new JsonApiResponse<>(userService.createUser(userDto));
-
-        UUID createdUserId = response.getData().getId();
-        URI location = URI.create("/api/v1/users/" + createdUserId);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(location);
-
-        return new ResponseEntity<>(response, headers, HttpStatus.CREATED);
-    }
+//    @PostMapping("/v1/users")
+//    public ResponseEntity<JsonApiResponse<User>> createUser(@RequestBody UserDto userDto){
+//        JsonApiResponse<User> response = new JsonApiResponse<>(userService.createUser(userDto));
+//
+//        UUID createdUserId = response.getData().getId();
+//        URI location = URI.create("/api/v1/users/" + createdUserId);
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setLocation(location);
+//
+//        return new ResponseEntity<>(response, headers, HttpStatus.CREATED);
+//    }
 
 }

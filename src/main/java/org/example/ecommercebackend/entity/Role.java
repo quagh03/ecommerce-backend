@@ -11,12 +11,24 @@ public class Role {
     @Id
     @GeneratedValue(generator = "uuid2")
     @GenericGenerator(name = "uuid2", strategy = "uuid2")
-    @Column(name = "id", columnDefinition = "BINARY(16)")
+    @Column(name = "role_id", columnDefinition = "BINARY(16)")
     private UUID id;
 
+    @OneToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
+
     @Enumerated(EnumType.STRING)
-    @Column(name = "name", nullable = false)
+    @Column(name = "role", nullable = false)
     private UserRole role;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public UUID getId() {
         return id;
@@ -36,7 +48,6 @@ public class Role {
 
     public enum UserRole {
         ROLE_ADMIN,
-        ROLE_MEMBER,
-        ROLE_VENDOR
+        ROLE_MEMBER
     }
 }

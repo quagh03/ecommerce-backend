@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.time.Instant;
+import java.util.*;
+import java.util.function.Predicate;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -47,15 +47,26 @@ public class UserServiceImpl implements UserService {
         // Validate and process userDto
         validateUserDto(userToAdd);
 
-        // Check if mobile or email already exists
-        if (userRepository.existsByMobileOrEmailOrUsername(userToAdd.getMobile(), userToAdd.getEmail(), userToAdd.getUsername())) {
-            throw new EntityExistsException("Mobile or email or username already exists");
+        // Check if mobile or email or already exists
+        boolean emailExists = userRepository.existsByEmail(userToAdd.getEmail());
+        boolean usernameExists = userRepository.existsByUsername(userToAdd.getUsername());
+        boolean mobileExists = userRepository.existsByMobile(userToAdd.getMobile());
+
+        List<String> duplicateFields = new ArrayList<>();
+
+        if (emailExists) duplicateFields.add("Email");
+        if (usernameExists) duplicateFields.add("Username");
+        if (mobileExists) duplicateFields.add("Mobile");
+
+        if (!duplicateFields.isEmpty()) {
+            throw new EntityExistsException(String.join(" and ", duplicateFields) + " already exist");
         }
 
+        //Create user
         User newUser = new User();
         BeanUtils.copyProperties(userToAdd, newUser, "password");
         newUser.setPasswordHash(passwordEncoder.encode(userToAdd.getPassword()));
-        newUser.setRegisteredAt(new Timestamp(System.currentTimeMillis()));
+        newUser.setRegisteredAt(Timestamp.from(Instant.now()));
 
         return userRepository.save(newUser);
     }
@@ -71,28 +82,27 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("UserDto must not be null");
         }
 
-        if (StringUtils.isEmpty(userDto.getFirstName())) {
-            throw new IllegalArgumentException("First name must not be null or empty");
-        }
+        List<ValidationCondition> validationConditions = Arrays.asList(
+                new ValidationCondition(StringUtils::isEmpty, userDto.getFirstName(), "First name must not be null or empty"),
+                new ValidationCondition(StringUtils::isEmpty, userDto.getLastName(), "Last name must not be null or empty"),
+                new ValidationCondition(StringUtils::isEmpty, userDto.getUsername(), "Username must not be null or empty"),
+                new ValidationCondition(StringUtils::isEmpty, userDto.getMobile(), "Mobile must not be null or empty"),
+                new ValidationCondition(StringUtils::isEmpty, userDto.getEmail(), "Email must not be null or empty"),
+                new ValidationCondition(StringUtils::isEmpty, userDto.getPassword(), "Password must not be null or empty")
+        );
 
-        if (StringUtils.isEmpty(userDto.getLastName())) {
-            throw new IllegalArgumentException("Last name must not be null or empty");
-        }
-
-        if (StringUtils.isEmpty(userDto.getUsername())) {
-            throw new IllegalArgumentException("Username must not be null or empty");
-        }
-
-        if (StringUtils.isEmpty(userDto.getMobile())) {
-            throw new IllegalArgumentException("Mobile must not be null or empty");
-        }
-
-        if (StringUtils.isEmpty(userDto.getEmail())) {
-            throw new IllegalArgumentException("Email must not be null or empty");
-        }
-
-        if (StringUtils.isEmpty(userDto.getPassword())) {
-            throw new IllegalArgumentException("Password must not be null or empty");
+        for (ValidationCondition condition : validationConditions) {
+            if (condition.isInvalid()) {
+                throw new IllegalArgumentException(condition.errorMessage());
+            }
         }
     }
+
+    private record ValidationCondition(Predicate<String> validation, String value, String errorMessage) {
+
+        public boolean isInvalid() {
+                return validation.test(value);
+            }
+        }
+
 }

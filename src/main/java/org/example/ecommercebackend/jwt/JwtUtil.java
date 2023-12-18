@@ -20,7 +20,7 @@ public class JwtUtil {
     public static String generateToken(User user){
         Date now = new Date();
 
-        Set<String> roles = user.getRoles() != null ? Set.of(user.getRoles().getRole().getRole().name()) : Set.of();
+        Set<String> roles = user.getRole() != null ? Set.of(user.getRole().getRole().name()) : Set.of();
 
         String jws = Jwts.builder()
                 .setHeaderParam("typ", "JWT")

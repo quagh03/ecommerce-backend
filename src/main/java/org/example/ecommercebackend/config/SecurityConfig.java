@@ -29,7 +29,9 @@ public class SecurityConfig  {
                         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                         //PERMIT ALL
                         .requestMatchers(
-                                "/api/v1/auth/login").permitAll()
+                                "/v1/auth/login",
+                                "/v1/auth/register",
+                                "v1/users").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .cors(Customizer.withDefaults());
