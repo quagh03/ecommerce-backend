@@ -20,19 +20,18 @@ CREATE TABLE `ecommerce`.`user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ecommerce`.`role` (
-                                    `id` BINARY(16) DEFAULT (UUID_TO_BIN(UUID())),
-                                    `name` enum('ROLE_ADMIN', 'ROLE_MEMBER') COLLATE utf8mb4_unicode_ci NOT NULL,
-                                    PRIMARY KEY (`id`)
+                                    `role_id` BINARY(16) DEFAULT (UUID_TO_BIN(UUID())),
+                                    `user_id` BINARY(16) NOT NULL UNIQUE,
+                                    `role` ENUM('ROLE_ADMIN', 'ROLE_MEMBER') NOT NULL,
+                                    PRIMARY KEY (`role_id`),
+                                    INDEX `idx_role_user` (`user_id` ASC),
+                                    CONSTRAINT `fk_role_user`
+                                        FOREIGN KEY (`user_id`)
+                                            REFERENCES `ecommerce`.`user` (`id`)
+                                            ON DELETE NO ACTION
+                                            ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE `ecommerce`.`user_role` (
-                                         `id` BINARY(16) DEFAULT (UUID_TO_BIN(UUID())),
-                                         `user_id` BINARY(16) unique NOT NULL,
-                                         `role_id` BINARY(16) NOT NULL,
-                                         PRIMARY KEY (`id`),
-                                         CONSTRAINT `fk_user_role_user_id` FOREIGN KEY (`user_id`) REFERENCES `ecommerce`.`user` (`id`) ON DELETE CASCADE,
-                                         CONSTRAINT `fk_user_role_role_id` FOREIGN KEY (`role_id`) REFERENCES `ecommerce`.`role` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `ecommerce`.`vendor`(
                                      `id` BINARY(16) DEFAULT (UUID_TO_BIN(UUID())),
@@ -252,6 +251,31 @@ CREATE TABLE `ecommerce`.`transaction` (
                                            CONSTRAINT `fk_transaction_order` FOREIGN KEY (`order_id`) REFERENCES `order` (`id`),
                                            CONSTRAINT `fk_transaction_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+USE `ecommerce`;
+-- Trigger to automatically add Role_Member when a new user is inserted
+DELIMITER //
+CREATE TRIGGER tr_after_insert_user
+    AFTER INSERT ON ecommerce.user
+    FOR EACH ROW
+BEGIN
+    INSERT INTO ecommerce.role (role_id, user_id, role)
+    VALUES (UUID_TO_BIN(UUID()), NEW.id, 'ROLE_MEMBER');
+END;
+//
+DELIMITER ;
+
+-- Trigger to automatically remove roles when a user is deleted
+DELIMITER //
+CREATE TRIGGER tr_after_delete_user
+    AFTER DELETE ON ecommerce.user
+    FOR EACH ROW
+BEGIN
+    DELETE FROM ecommerce.role WHERE user_id = OLD.id;
+END;
+//
+DELIMITER ;
+
 
 
 
