@@ -1,5 +1,7 @@
 package org.example.ecommercebackend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -8,6 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "user")
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 public class User {
     @Id
     @GeneratedValue(generator = "uuid2")
@@ -46,6 +49,17 @@ public class User {
     @Column(name = "profile")
     @Lob
     private String profile;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private UserRole roles;
+
+    public UserRole getRoles() {
+        return roles;
+    }
+
+    public void setRoles(UserRole roles) {
+        this.roles = roles;
+    }
 
     public String getUsername() {
         return username;

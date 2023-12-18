@@ -13,4 +13,5 @@ public interface UserService {
 
     User createUser(UserDto userToAdd);
 
+    User getUserByUsername(String username);
 }

@@ -60,6 +60,12 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(newUser);
     }
 
+    @Override
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() ->  new EntityNotFoundException("User with username: " + username + " NOT FOUND"));
+    }
+
     public void validateUserDto(UserDto userDto) {
         if (userDto == null) {
             throw new IllegalArgumentException("UserDto must not be null");

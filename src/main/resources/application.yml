@@ -1,13 +1,14 @@
 server:
   port: 8080
-  servlet:
-    context-path: /api
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/ecommerce
     username: root
     password: lequanghuy2212
     driver-class-name: com.mysql.cj.jdbc.Driver
+  security:
+    user:
+      password: none
   jpa:
     hibernate:
       ddl-auto: update
