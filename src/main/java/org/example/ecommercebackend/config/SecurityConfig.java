@@ -30,8 +30,9 @@ public class SecurityConfig  {
                         //PERMIT ALL
                         .requestMatchers(
                                 "/v1/auth/login",
-                                "/v1/auth/register",
-                                "v1/users").permitAll()
+                                "/v1/auth/register").permitAll()
+                        //ROLE
+                        .requestMatchers("/v1/users").hasAnyAuthority("ROLE_ADMIN")
                         .anyRequest().authenticated())
                 .addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .cors(Customizer.withDefaults());
